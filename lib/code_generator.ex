@@ -21,7 +21,7 @@ defmodule CodeGenerator do
 
   def emit_code(:program, code_snippet, _) do
     """
-        .section        __TEXT,__text,regular,pure_instructions
+        .section	.text.startup,"ax",@progbits
         .p2align        4, 0x90
     """ <>
       code_snippet
@@ -29,8 +29,8 @@ defmodule CodeGenerator do
 
   def emit_code(:function, code_snippet, :main) do
     """
-        .globl  _main         ## -- Begin function main
-    _main:                    ## @main
+        .globl  main         ## -- Begin function main
+    main:                    ## @main
     """ <>
       code_snippet
   end
