@@ -6,6 +6,11 @@ defmodule CodeGenerator do
     code
   end
 
+  def generate_code_compile(ast)do
+    code = post_order(ast)
+    code
+  end
+
   def post_order(node) do
     case node do
       nil ->
@@ -21,7 +26,7 @@ defmodule CodeGenerator do
 
   def emit_code(:program, code_snippet, _) do
     """
-        .section	.text.startup,"ax",@progbits
+        .section  .text.startup,"ax",@progbits
         .p2align        4, 0x90
     """ <>
       code_snippet
