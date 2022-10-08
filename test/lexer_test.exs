@@ -108,7 +108,7 @@ defmodule LexerTest do
   end
 
   # tests to fail
-  test "wrong case", state do
+    test "wrong case return", state do
     code = """
     int main() {
       RETURN 2;
@@ -120,4 +120,160 @@ defmodule LexerTest do
     expected_result = List.update_at(state[:tokens], 5, fn _ -> :error end)
     assert Lexer.scan_words(s_code) == expected_result
   end
+  
+  test "wrong case int", state do
+    code = """
+    INT main() {
+      return 2;
+    }
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = List.update_at(state[:tokens], 0, fn _ -> :error end)
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+  
+  test "wrong char closing paren", state do
+    code = """
+    int main(] {
+      return 2;
+    }
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = List.update_at(state[:tokens], 3, fn _ -> :error end)
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+
+  test "wrong char opening brace", state do
+    code = """
+    int main() [
+      return 2;
+    }
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = List.update_at(state[:tokens], 4, fn _ -> :error end)
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+
+  test "wrong char closing brace", state do
+    code = """
+    int main() {
+      return 2;
+    ]
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = List.update_at(state[:tokens], 8, fn _ -> :error end)
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+  
+  test "wrong char semicolon", state do
+    code = """
+    int main() {
+      return 2:
+    }
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = List.update_at(state[:tokens], 7, fn _ -> :error end)
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+  
+  test "no semicolon", state do
+    code = """
+    int main() {
+      return 2
+    }
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = Enum.filter(List.update_at(state[:tokens], 7, fn _-> nil end), & !is_nil(&1))
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+  
+  test "no opening brace", state do
+    code = """
+    int main() 
+      return 2;
+    }
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = Enum.filter(List.update_at(state[:tokens], 4, fn _-> nil end), & !is_nil(&1))
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+  
+    test "no closing brace", state do
+    code = """
+    int main() {
+      return 2;
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = Enum.filter(List.update_at(state[:tokens], 8, fn _-> nil end), & !is_nil(&1))
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+  
+  test "no retval", state do
+    code = """
+    int main() {
+      return ;
+    }
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = Enum.filter(List.update_at(state[:tokens], 6, fn _-> nil end), & !is_nil(&1))
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+  
+  test "no open paren", state do
+    code = """
+    int main) {
+      return 2;
+    }
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = Enum.filter(List.update_at(state[:tokens], 2, fn _-> nil end), & !is_nil(&1))
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+  
+  test "no close paren", state do
+    code = """
+    int main( {
+      return 2;
+    }
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = Enum.filter(List.update_at(state[:tokens], 3, fn _-> nil end), & !is_nil(&1))
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+  
+  test "no space", state do
+    code = """
+    int main() {
+      return2;
+    }
+    """
+
+    s_code = Sanitizer.sanitize_source(code)
+
+    expected_result = List.update_at(state[:tokens], 9, fn _-> nil end)
+    assert Lexer.scan_words(s_code) == expected_result
+  end
+  
 end
