@@ -82,6 +82,32 @@ defmodule Parser do
   def parse_expression([next_token | rest]) do
     case next_token do
       {:constant, value} -> {%AST{node_name: :constant, value: value}, rest}
+
+      :negative -> expression = parse_expression(rest)
+        case expression do
+          {{:error, error_message}, rest} ->
+            {{:error, error_message}, rest}
+
+          {exp_node, rest} ->
+            {%AST{node_name: :negative, left_node: exp_node}, rest}
+        end
+
+      :complement -> expression = parse_expression(rest)
+        case expression do
+          {{:error, error_message}, rest} ->
+            {{:error, error_message}, rest}
+
+          {exp_node, rest} ->
+            {%AST{node_name: :complement, left_node: exp_node}, rest}
+        end
+
+      :logic -> expression = parse_expression(rest)
+        case expression do
+          {{:error, error_message}, rest} ->
+            {{:error, error_message}, rest}
+          {exp_node, rest} ->
+            {%AST{node_name: :logic, left_node: exp_node}, rest}
+        end
       _ -> {{:error, "Error: constant value missed"}, rest}
     end
   end
